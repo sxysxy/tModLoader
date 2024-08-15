@@ -1,5 +1,5 @@
-[submodule "setup/PatchReviewer"]
-	path = setup/PatchReviewer
+[submodule "setup/WinSetup/PatchReviewer"]
+	path = setup/WinSetup/PatchReviewer
 	url = https://github.com/Chicken-Bones/PatchReviewer.git
 [submodule "FNA"]
 	path = FNA
