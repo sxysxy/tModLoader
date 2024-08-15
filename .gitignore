@@ -37,5 +37,6 @@ solutions/tModLoader v*
 solutions/Release/
 **/msbuild.binlog
 /steam_build
-.vscode
 .DS_Store
+.gitbuffer
+.vscode
