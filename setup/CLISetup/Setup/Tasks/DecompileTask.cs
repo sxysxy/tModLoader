@@ -21,10 +21,10 @@ namespace Setup.Tasks {
 	public class DecompileTask : SetupOperation {
 		private readonly string srcDir;
 		private readonly bool serverOnly;
-		private readonly bool formatOutput = GetConfig().FormatAfterDecompiling;
+		//private readonly bool formatOutput = GetConfig().FormatAfterDecompiling;
 
-		public static readonly Version clientVersion = new Version(GetConfig().ClientVersion);
-		public static readonly Version serverVersion = new Version(GetConfig().ServerVersion);
+		//public static readonly Version clientVersion = new Version(GetConfig().ClientVersion);
+		//public static readonly Version serverVersion = new Version(GetConfig().ServerVersion);
 
 		public DecompileTask(ITaskInterface taskInterface, string srcDir, bool serverOnly) : base(taskInterface) {
 			this.srcDir = srcDir;
@@ -38,8 +38,10 @@ namespace Setup.Tasks {
 
 			taskInterface.SetStatus("Decomiling");
 
-			PEFile? clientModule = serverOnly ? null : ReadModule(GetConfig().terrariaPath, clientVersion);
-			PEFile serverModule = ReadModule(GetConfig().serverPath, serverVersion);
+			var config = GetConfig()!;
+
+			PEFile? clientModule = serverOnly ? null : ReadModule(config.terrariaPath, new Version(config.ClientVersion));
+			PEFile serverModule = ReadModule(config.serverPath, new Version(config.ServerVersion));
 			PEFile? mainModule = serverOnly ? serverModule : clientModule!;
 
 			projectDecompiler = new ExtendedProjectDecompiler {
@@ -99,6 +101,7 @@ namespace Setup.Tasks {
 					//look in the base module's embedded resources
 					var resName = name.Name + ".dll";
 					var res = baseModule.Resources.Where(r => r.ResourceType == ResourceType.Embedded).SingleOrDefault(r => r.Name.EndsWith(resName));
+					
 					if (!res.IsNil)
 						module = new PEFile(res.Name, res.TryOpenStream());
 
@@ -154,10 +157,16 @@ namespace Setup.Tasks {
 		protected PEFile ReadModule(string path, Version version)
 		{
 			bool usingVersionedPath = false;
-			var versionedPath = path.Insert(path.LastIndexOf('.'), $"_v{version}");
-			if (File.Exists(versionedPath)) {
-				path = versionedPath;
-				usingVersionedPath = true;
+
+			string versionedPath = "";
+			if (path.LastIndexOf('.') != -1) {  
+				// path.LastIndexOf('.') may returns -1 if the given path has no '.', which will cause path.Insert throw exception
+				// Just judge the value of it to avoid it.
+				versionedPath = path.Insert(path.LastIndexOf('.'), $"_v{version}");
+				if (File.Exists(versionedPath)) {
+					path = versionedPath;
+					usingVersionedPath = true;
+				}
 			}
 
 			taskInterface.SetStatus("Loading " + Path.GetFileName(path));
@@ -166,7 +175,9 @@ namespace Setup.Tasks {
 				var module = new PEFile(path, fileStream, PEStreamOptions.PrefetchEntireImage);
 				var assemblyName = new AssemblyName(module.FullName);
 				if (assemblyName.Version != version)
-					throw new Exception($"{assemblyName.Name} version {assemblyName.Version}. Expected {version}");
+					throw new Exception($"{assemblyName.Name} version {assemblyName.Version}. Expected {version} |" +
+						 "Note: If you modified CLISetup/Setup/FileHandler.cs, you may need to delete the saved configuration file." + 
+						 "See Setup.FileHandler.GetConfig");
 
 				if (!usingVersionedPath) {
 					taskInterface.SetStatus("Backup up " + Path.GetFileName(path) + " to " + Path.GetFileName(versionedPath));
@@ -315,7 +326,7 @@ namespace Setup.Tasks {
 						w.WriteLine("#endif");
 
 					string source = w.ToString();
-					if (formatOutput) {
+					if (GetConfig().FormatAfterDecompiling) {
 						updateStatus("Formatting: " + src.Key);
 						source = FormatTask.Format(source, true);
 					}

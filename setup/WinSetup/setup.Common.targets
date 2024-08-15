@@ -29,7 +29,6 @@
 	<!-- Library references -->
 	<ItemGroup>
 		<!-- Nothing! -->
-		<Reference Include="ICSharpCode.Decompiler" HintPath="lib\ICSharpCode.Decompiler.dll" />
 	</ItemGroup>
 
 	<!-- PatchReviewer exclusion -->

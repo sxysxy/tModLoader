@@ -64,7 +64,8 @@ namespace Setup {
 			public string ClientVersion {
 				get {
 					if (string.IsNullOrEmpty(_clientVersion))
-						_clientVersion = "1.4.3.6";
+						//_clientVersion = "1.4.3.6";
+						_clientVersion = "1.4.4.9";
 					return _clientVersion;
 				}
 				set => _clientVersion = value;
@@ -73,7 +74,8 @@ namespace Setup {
 			public string ServerVersion {
 				get {
 					if (string.IsNullOrEmpty(_serverVersion))
-						_serverVersion = "1.4.3.6";
+						//_serverVersion = "1.4.3.6";
+						_serverVersion = "1.4.4.9";
 					return _serverVersion;
 				}
 				set => _serverVersion = value;
@@ -250,7 +252,8 @@ namespace Setup {
 			if (OperatingSystem.IsWindows())
 				terrariaFileName = "Terraria.exe";
 			else if (OperatingSystem.IsMacOS())
-				terrariaFileName = "Terraria.App";
+				//terrariaFileName = "Terraria.App";
+				terrariaFileName = "Terraria.bin.osx";
 			else if (OperatingSystem.IsLinux())
 				terrariaFileName = "Terraria.bin.x86_64";
 			else
@@ -268,7 +271,8 @@ namespace Setup {
 			if (OperatingSystem.IsWindows())
 				terrariaServerFileName = "TerrariaServer.exe";
 			else if (OperatingSystem.IsMacOS())
-				terrariaServerFileName = "TerrariaServer.App";
+				//terrariaServerFileName = "TerrariaServer.App";
+				terrariaServerFileName = "TerrariaServer.bin.osx";
 			else if (OperatingSystem.IsLinux())
 				terrariaServerFileName = "TerrariaServer.bin.x86_64";
 			else
@@ -280,11 +284,17 @@ namespace Setup {
 		public static bool SelectAndSetTerrariaDirectoryDialog(ITaskInterface taskInterface) {
 			while (true) {
 				string? err = null;
+				string? serverPath = null;
 				if (taskInterface.SelectDialog<string>("Enter the location of the Terraria executable/binary", out string path)) {
 					if (Path.GetFileName(path) != "Terraria.exe")
-						err = $"File must be named {GetTerrariaFileName()}";
-					else if (!File.Exists(Path.Combine(Path.GetDirectoryName(path)!, GetTerrariaServerFileName())))
-						err = $"{GetTerrariaServerFileName()} must exist in the same directory";
+					//if (Path.GetFileName(path) != GetTerrariaFileName())
+						err = $"File must be named Terraria.exe. If you are using Linux or MacOS, you can copy a Terraria.exe from windows.\n";
+					//else if (!File.Exists(Path.Combine(Path.GetDirectoryName(path)!, GetTerrariaServerFileName())))
+					serverPath = Path.Combine(Path.GetDirectoryName(path)!, "TerrariaServer.exe");
+					if(!File.Exists(serverPath)) {
+						err = $"TerrariaServer.exe must exist in the same directory\n";
+					} 
+
 				}
 
 				if (err != null)
@@ -292,6 +302,7 @@ namespace Setup {
 				else {
 					Config nc = Config.GetConfig();
 					nc.terrariaPath = path;
+					nc.serverPath = serverPath!;
 					Config.SetConfig(nc);
 
 					return true;

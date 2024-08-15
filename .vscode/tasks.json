@@ -1,0 +1,14 @@
+{
+    "version" : "2.0.0",
+    "tasks" : [
+        {
+            "label" : "build-CliSetup",
+            "type" : "shell",
+            "command" : "dotnet build ./setup/CLISetup/Cli/CliSetup.csproj",
+            "group" : {
+                "kind" : "build",
+                "isDefault" : true
+            }
+        }
+    ]
+}
