@@ -39,3 +39,4 @@ solutions/Release/
 /steam_build
 .DS_Store
 .gitbuffer
+.vscode
